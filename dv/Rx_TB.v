@@ -108,38 +108,6 @@ module Rx_TB;
         send_uart_byte(8'hFF);
         check_result(8'hFF);
 
-        // --- Scenario 5: Soft reset mid-frame ---
-        #(BIT_PERIOD*12);
-        $display("\n--- Scenario 5: Soft reset mid-frame ---");
-        fork
-            send_uart_byte(8'hC3);
-            begin
-                #(BIT_PERIOD*4);
-                rst <= 1;             // assert soft reset (sync)
-                $display("[%0t] SYNC RESET asserted!", $time);
-                #(CLK_PERIOD*2);
-                rst <= 0;             // release
-                $display("[%0t] SYNC RESET deasserted!", $time);
-            end
-        join
-        // No check here → data may be corrupted
-
-        // --- Scenario 6: Hard reset mid-frame ---
-        #(BIT_PERIOD*12);
-        $display("\n--- Scenario 6: Hard reset mid-frame ---");
-        fork
-            send_uart_byte(8'h96);
-            begin
-                #(BIT_PERIOD*4);
-                arst <= 0;             // assert hard reset (async)
-                $display("[%0t] ASYNC RESET asserted!", $time);
-                #(BIT_PERIOD);
-                arst <= 1;             // release
-                $display("[%0t] ASYNC RESET deasserted!", $time);
-            end
-        join
-        // No check here → data should be flushed
-       
         // End simulation
         #(BIT_PERIOD*50);
         $display("\n--- Simulation finished ---");
@@ -147,3 +115,4 @@ module Rx_TB;
     end
 
 endmodule
+

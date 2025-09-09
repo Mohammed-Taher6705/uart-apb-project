@@ -42,34 +42,6 @@ module APB #(
     reg tx_start_reg;
     wire tx_start = tx_start_reg;
 
-    // Detect reset edge for debug
-    reg presetn_prev;
-    reg rx_rst_prev;
-    wire presetn_fall = presetn_prev && !PRESETn;
-    wire rx_rst_pulse = rx_rst && !rx_rst_prev;
-
-    always @(posedge PCLK or negedge PRESETn) begin
-        if (!PRESETn) begin
-            tx_start_reg <= 1'b0;
-            presetn_prev <= 1'b0;
-            rx_rst_prev  <= 1'b0;
-        end else begin
-            tx_start_reg <= apb_write && (addr_word == ADDR_TXDATA);
-            presetn_prev <= PRESETn;
-            rx_rst_prev  <= rx_rst;
-        end
-    end
-
-    // Debug: Print only on reset edge or single rx_rst pulse
-    always @(posedge PCLK) begin
-        if (tx_start && tx_en) $display("[%0t] TX Start: tx_data_reg=%h", $time, tx_data_reg);
-        if (rx_done) $display("[%0t] RX Done: rx_data_wire=%h, rx_error=%b", $time, rx_data_wire, rx_error);
-        if (rx_done && !rx_error && !rx_valid) $display("[%0t] Setting rx_valid=1", $time);
-        if (rx_valid && (apb_read && addr_word == ADDR_RXDATA)) $display("[%0t] Clearing rx_valid on RXDATA read", $time);
-        if (presetn_fall || rx_rst_pulse) $display("[%0t] Clearing rx_valid on reset", $time);
-        if (apb_read && addr_word == ADDR_STATS) $display("[%0t] STATUS Read: PRDATA=%h, rx_valid=%b", $time, PRDATA, rx_valid);
-    end
-
     always @(posedge PCLK or negedge PRESETn) begin
         if (!PRESETn) begin
             tx_en          <= 1'b0;
@@ -180,3 +152,4 @@ module APB #(
     );
 
 endmodule
+
